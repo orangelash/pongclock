@@ -17,17 +17,6 @@ time_t time1;
 tm *ltm2;
 tm *ltm = localtime(&now);
 
-class positions
-{
-  public:
-    typedef struct X
-    {
-        int posx, posy;
-    } pos;
-
-    pos *b[20];
-};
-
 class game
 {
   public:
@@ -73,9 +62,7 @@ class game
         PSpeedY = 5;
     }
     void start_settings();
-    //void win();
-    void KeyControl();
-    void KeyReset();
+    void increase_score(int score);
     void DrawField();
     void DrawScore();
 } settings;
@@ -98,25 +85,17 @@ class reflector
     float x, y;
     float vy;
     float size;
-    bool Up, Down, hold;
+    bool Up, Down;
     reflector()
     {
         vy = 0;
         y = 0;
         Up = false;
         Down = false;
-        hold = false;
     }
     void draw();
     void move();
-    void care();
 } left, right;
-
-void game::KeyReset()
-{
-    left.vy = 0;
-    right.vy = 0;
-}
 
 /*
 void game::KeyControl()
@@ -134,6 +113,7 @@ void game::KeyControl()
 
 void game::start_settings()
 {
+    now = time(0);
     left.size = 60;
     right.size = 60;
     left.x = -185;
@@ -144,35 +124,13 @@ void game::start_settings()
     ball.y = 0;
 }
 
-/*void game::win(){
-    if((ScoreL == 8)||(ScoreR == 8)){
-        glutTimerFunc(2000,exit,0);
-        settings.delay = 10000;
-    }
-    if(ball.x < left.x + PThickness - BallSpeedX){
-        //start_settings();
-        right.hold = true;
-        ScoreR++;
-    }
-    if(ball.x > right.x - PThickness + BallSpeedX){
-        //start_settings();
-        left.hold = true;
-        ScoreL++;
-    }
-}*/
-
-void reflector::care()
+void game::increase_score(int score)
 {
-    if (hold)
-    {
-        ball.vx = 0;
-        if (x < 0)
-            ball.x = x + 2 * settings.PThickness;
-        if (x > 0)
-            ball.x = x - 2 * settings.PThickness;
-        ball.vy = vy;
-        ball.y = y;
-    }
+    if (score == 1)
+        ScoreR++;
+
+    if (score == 2)
+        ScoreL++;
 }
 
 void game::DrawField()
@@ -333,29 +291,37 @@ void keyboardUp(unsigned char key, int x, int y)
 */
 void Timer(int value)
 {
+    if (value == 3)
+    {
+        //reset minute
+       settings. increase_score(1);
+        settings.start_settings();
+        value = 0;
+    }
+
     if (value == 1)
     {
-        time1 = time(0);
-        if (time1 - (now) < 60)
+        if (ball.x > left.x)
         {
-           /* left.y = ball.y;
+            /* left.y = ball.y;
             if (ball.y < 185)
                 right.y = ball.y + 5;
             else if (ball.y > 185)
                 right.y = ball.y - 5;
             else if (ball.y == 185)
                 right.y = ball.y;*/
-                left.y = -ball.y;
+            right.y = ball.y;
+            left.y = -ball.y;
 
             puts("5");
         }
         else
-            value = 0;
+            value = 3;
     }
     if (value == 0)
     {
         time1 = time(0);
-        if (time1 - (now) >= 55)
+        if (time1 - (now) >= 57)
         {
             value = 1;
             puts("change 1");
@@ -366,11 +332,11 @@ void Timer(int value)
             right.y = ball.y;
         }
     }
-        ball.move();
-        ball.reflection();
-        glutPostRedisplay();
-        glutTimerFunc(1, Timer, value);
-    
+    ball.move();
+    ball.reflection();
+    //settings.win();
+    glutPostRedisplay();
+    glutTimerFunc(1, Timer, value);
 }
 
 void draw()
