@@ -8,11 +8,11 @@
 #include <ctime>
 #include <stdio.h>
 
-long int minute_counter = 0;
 int aux_counter = 0;
 int hour_counter = 0;
 
 time_t now = time(0);
+time_t hour = time(0);
 time_t time1;
 tm *ltm2;
 tm *ltm = localtime(&now);
@@ -98,22 +98,23 @@ class reflector
 } left, right;
 
 /*
-void game::KeyControl()
-{
-    if ((left.Up) && (!left.Down))
-        left.vy = PSpeedY;
-    if ((!left.Up) && (left.Down))
-        left.vy = -PSpeedY;
-    if ((right.Up) && (!right.Down))
-        right.vy = PSpeedY;
-    if ((!right.Up) && (right.Down))
-        right.vy = -PSpeedY;
-}
-*/
+ void game::KeyControl()
+ {
+ if ((left.Up) && (!left.Down))
+ left.vy = PSpeedY;
+ if ((!left.Up) && (left.Down))
+ left.vy = -PSpeedY;
+ if ((right.Up) && (!right.Down))
+ right.vy = PSpeedY;
+ if ((!right.Up) && (right.Down))
+ right.vy = -PSpeedY;
+ }
+ */
 
 void game::start_settings()
 {
     now = time(0);
+
     left.size = 60;
     right.size = 60;
     left.x = -185;
@@ -127,10 +128,17 @@ void game::start_settings()
 void game::increase_score(int score)
 {
     if (score == 1)
+    {
         ScoreR++;
-
-    if (score == 2)
+        if (ScoreR == 60)
+            ScoreR = 0;
+    }
+    else
+    {
         ScoreL++;
+        if (ScoreL == 24)
+            ScoreL = 0;
+    }
 }
 
 void game::DrawField()
@@ -237,104 +245,112 @@ void ball::move()
 }
 
 /*
-void keyboard(unsigned char key, int x, int y)
-{
-    switch (key)
-    {
-    case 'q':
-        left.Up = true;
-        break;
-    case 'a':
-        left.Down = true;
-        break;
-    case 'z':
-        if (left.hold)
-        {
-            left.hold = false;
-            ball.vx = settings.BallSpeedX;
-        }
-        break;
-    case 'p':
-        right.Up = true;
-        break;
-    case 'l':
-        right.Down = true;
-        break;
-    case 'm':
-        if (right.hold)
-        {
-            right.hold = false;
-            ball.vx = -settings.BallSpeedX;
-            break;
-        }
-    }
-}
-
-void keyboardUp(unsigned char key, int x, int y)
-{
-    switch (key)
-    {
-    case 'esc':
-        return 0;
-        break;
-    case 'a':
-        left.Down = false;
-        break;
-    case 'p':
-        right.Up = false;
-        break;
-    case 'l':
-        right.Down = false;
-        break;
-    }
-}
-*/
+ void keyboard(unsigned char key, int x, int y)
+ {
+ switch (key)
+ {
+ case 'q':
+ left.Up = true;
+ break;
+ case 'a':
+ left.Down = true;
+ break;
+ case 'z':
+ if (left.hold)
+ {
+ left.hold = false;
+ ball.vx = settings.BallSpeedX;
+ }
+ break;
+ case 'p':
+ right.Up = true;
+ break;
+ case 'l':
+ right.Down = true;
+ break;
+ case 'm':
+ if (right.hold)
+ {
+ right.hold = false;
+ ball.vx = -settings.BallSpeedX;
+ break;
+ }
+ }
+ }
+ void keyboardUp(unsigned char key, int x, int y)
+ {
+ switch (key)
+ {
+ case 'esc':
+ return 0;
+ break;
+ case 'a':
+ left.Down = false;
+ break;
+ case 'p':
+ right.Up = false;
+ break;
+ case 'l':
+ right.Down = false;
+ break;
+ }
+ }
+ */
 void Timer(int value)
 {
-    if (value == 3)
-    {
-        //reset minute
-       settings. increase_score(1);
-        settings.start_settings();
-        value = 0;
-    }
-
     if (value == 1)
     {
-        if (ball.x > left.x)
+        if (time1 - hour >= 20)
+        {
+            if (ball.x < right.x)
+            {
+                right.y = -ball.y;
+                left.y = ball.y;
+            }
+            else
+            {
+                settings.increase_score(2);
+                settings.start_settings();
+                hour = time(0);
+                value = 0;
+            }
+        }
+        else if (ball.x > left.x)
         {
             /* left.y = ball.y;
-            if (ball.y < 185)
-                right.y = ball.y + 5;
-            else if (ball.y > 185)
-                right.y = ball.y - 5;
-            else if (ball.y == 185)
-                right.y = ball.y;*/
+             if (ball.y < 185)
+             right.y = ball.y + 5;
+             else if (ball.y > 185)
+             right.y = ball.y - 5;
+             else if (ball.y == 185)
+             right.y = ball.y;*/
             right.y = ball.y;
             left.y = -ball.y;
-
-            puts("5");
         }
         else
-            value = 3;
+        {
+            settings.increase_score(1);
+            settings.start_settings();
+            value = 0;
+        }
     }
     if (value == 0)
     {
+        puts("1");
         time1 = time(0);
-        if (time1 - (now) >= 57)
-        {
+        if (time1 - (now) >= 10)
             value = 1;
-            puts("change 1");
-        }
+
         else
         {
+            puts("2");
             left.y = ball.y;
             right.y = ball.y;
         }
     }
+    puts("3");
     ball.move();
     ball.reflection();
-    //settings.win();
     glutPostRedisplay();
     glutTimerFunc(1, Timer, value);
 }
