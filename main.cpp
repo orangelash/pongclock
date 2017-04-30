@@ -317,15 +317,37 @@ void Timer(int value)
         }
         else if (ball.x > left.x)
         {
-            /* left.y = ball.y;
-             if (ball.y < 185)
-             right.y = ball.y + 5;
-             else if (ball.y > 185)
-             right.y = ball.y - 5;
-             else if (ball.y == 185)
-             right.y = ball.y;*/
-            right.y = ball.y;
-            left.y = -ball.y;
+           /* if (ball.x < 0)
+                left.y = ball.y;
+            if (ball.x > 0)
+            {
+                if (ball.y < 0)
+                    right.y = ball.y + 20;
+                else if (ball.y > 0)
+                    right.y = ball.y - 20;
+                else if (ball.y == 0)
+                    right.y = ball.y;
+
+                /*right.y = ball.y;
+            left.y = -ball.y;*/
+             if (ball.y > 125)
+            {
+                left.y = 125;
+                right.y = 125;
+            }
+
+            else if (ball.y < -125)
+            {
+                left.y = -125;
+                right.y = -125;
+            }
+
+            else
+            {
+                left.y = ball.y;
+                right.y = ball.y;
+            }
+            
         }
         else
         {
@@ -336,19 +358,31 @@ void Timer(int value)
     }
     if (value == 0)
     {
-        puts("1");
         time1 = time(0);
         if (time1 - (now) >= 10)
             value = 1;
 
         else
         {
-            puts("2");
-            left.y = ball.y;
-            right.y = ball.y;
+            if (ball.y > 125)
+            {
+                left.y = 125;
+                right.y = 125;
+            }
+
+            else if (ball.y < -125)
+            {
+                left.y = -125;
+                right.y = -125;
+            }
+
+            else
+            {
+                left.y = ball.y;
+                right.y = ball.y;
+            }
         }
     }
-    puts("3");
     ball.move();
     ball.reflection();
     glutPostRedisplay();
