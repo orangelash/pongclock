@@ -1,6 +1,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
+
 #include <time.h>
 #include <math.h>
 #include <cmath>
@@ -8,7 +9,7 @@
 #include <ctime>
 #include <stdio.h>
 
-int aux_counter = 0;
+int aux_counter;
 int hour_counter = 0;
 
 time_t now = time(0);
@@ -77,6 +78,8 @@ class ball
     void move();
     void reflection();
     void draw();
+    void ai();
+    void adjust(int flag);
 } ball;
 
 class reflector
@@ -94,8 +97,8 @@ class reflector
         Down = false;
     }
     void draw();
-    void move();
-} left, right;
+    void compensate();
+} left, right, reflector;
 
 /*
  void game::KeyControl()
@@ -113,6 +116,7 @@ class reflector
 
 void game::start_settings()
 {
+    aux_counter = 2;
     now = time(0);
 
     left.size = 60;
@@ -175,7 +179,14 @@ void game::DrawField()
 
 void game::DrawScore()
 {
-    glColor3f(0, 1, 1);
+    time_t t = time(0);
+    tm *ltm3 = localtime(&now);
+
+    //garantia de que o relógio se mantém  sincronizado
+    ScoreL = ltm3->tm_hour;
+    ScoreR = ltm3->tm_min;
+
+    glColor3f(1, 1, 1);
     glRasterPos2f(TextPosX - 50, TextPosY + 20);
     glutBitmapCharacter(GLUT_BITMAP_9_BY_15, '0' + ScoreL / 10);
     glRasterPos2f(TextPosX - 40, TextPosY + 20);
@@ -190,21 +201,6 @@ void game::DrawScore()
     glutBitmapCharacter(GLUT_BITMAP_9_BY_15, '0' + ScoreR % 10);
 }
 
-void reflector::move()
-{
-    y += vy;
-    if (y < -settings.FieldSizeY + size / 2)
-    {
-        y = -settings.FieldSizeY + size / 2;
-        vy = 0;
-    }
-    if (y > settings.FieldSizeY - size / 2)
-    {
-        y = settings.FieldSizeY - size / 2;
-        vy = 0;
-    }
-}
-
 void reflector::draw()
 {
     glColor3f(1, 0, 1);
@@ -214,19 +210,86 @@ void reflector::draw()
     glVertex2f(x - settings.PThickness, y + size / 2);
 }
 
+void reflector::compensate()
+{
+
+    if (left.y > 120)
+        left.y = 120;
+    if (left.y < -120)
+        left.y = -120;
+    if (right.y < -120)
+        right.y = -120;
+    if (right.y > 120)
+        right.y = 120;
+}
+
 void ball::reflection()
 {
-    if ((y <= -settings.FieldSizeY) || (y >= settings.FieldSizeY))
+    if ((y <= -settings.FieldSizeY + 5) || (y >= settings.FieldSizeY - 5))
         vy = -vy;
     if ((x <= left.x + settings.PThickness) && (fabs(double(y - left.y)) <= left.size / 2 + fabs(vy)))
     {
         vx = -vx;
         vy += left.vy;
+        system("afplay pipe.wav");
     }
     if ((x >= right.x - settings.PThickness) && (fabs(double(y - right.y)) <= right.size / 2 + fabs(vy)))
     {
         vx = -vx;
         vy += right.vy;
+        system("afplay pipe.wav");
+    }
+}
+
+void ball::ai()
+{
+    if (x < 0)
+    {
+        if (vx < 0)
+        {
+            if (y > left.y)
+                left.y = left.y + 3;
+
+            if (y < left.y)
+                left.y = left.y - 3;
+        }
+    }
+
+    if (x > 0)
+    {
+        if (vx >= 0)
+        {
+            if (y > right.y)
+                right.y = right.y + 3;
+
+            if (y < right.y)
+                right.y = right.y - 3;
+        }
+    }
+}
+
+void ball::adjust(int flag)
+{
+
+    if (flag == 1)
+    {
+        if (left.y - y < 1 || left.y + y > 1)
+        {
+            if (left.y < y)
+                left.y = left.y - 3;
+            if (left.y >= y)
+                left.y = left.y + 3;
+        }
+    }
+    else
+    {
+        if (right.y - y < 1 || right.y + y > 1)
+        {
+            if (right.y < y)
+                right.y = right.y - 3;
+            if (right.y >= y)
+                right.y = right.y - 3;
+        }
     }
 }
 
@@ -251,51 +314,51 @@ void ball::move()
  {
  case 'q':
  left.Up = true;
- break;
- case 'a':
- left.Down = true;
- break;
- case 'z':
- if (left.hold)
- {
- left.hold = false;
- ball.vx = settings.BallSpeedX;
- }
- break;
- case 'p':
- right.Up = true;
- break;
- case 'l':
- right.Down = true;
- break;
- case 'm':
- if (right.hold)
- {
- right.hold = false;
- ball.vx = -settings.BallSpeedX;
- break;
- }
- }
- }
- void keyboardUp(unsigned char key, int x, int y)
- {
- switch (key)
- {
- case 'esc':
- return 0;
- break;
- case 'a':
- left.Down = false;
- break;
- case 'p':
- right.Up = false;
- break;
- case 'l':
- right.Down = false;
- break;
- }
- }
- */
+break;
+case 'a':
+left.Down = true;
+break;
+case 'z':
+if (left.hold)
+{
+    left.hold = false;
+    ball.vx = settings.BallSpeedX;
+}
+break;
+case 'p':
+right.Up = true;
+break;
+case 'l':
+right.Down = true;
+break;
+case 'm':
+if (right.hold)
+{
+    right.hold = false;
+    ball.vx = -settings.BallSpeedX;
+    break;
+}
+}
+}
+void keyboardUp(unsigned char key, int x, int y)
+{
+    switch (key)
+    {
+    case 'esc':
+        return 0;
+        break;
+    case 'a':
+        left.Down = false;
+        break;
+    case 'p':
+        right.Up = false;
+        break;
+    case 'l':
+        right.Down = false;
+        break;
+    }
+}
+*/
 void Timer(int value)
 {
     if (value == 1)
@@ -304,11 +367,13 @@ void Timer(int value)
         {
             if (ball.x < right.x)
             {
-                right.y = -ball.y;
-                left.y = ball.y;
+                ball.ai();
+                ball.adjust(2);
+                reflector.compensate();
             }
             else
             {
+                system("afplay beep-10.wav");
                 settings.increase_score(2);
                 settings.start_settings();
                 hour = time(0);
@@ -317,45 +382,20 @@ void Timer(int value)
         }
         else if (ball.x > left.x)
         {
-           /* if (ball.x < 0)
-                left.y = ball.y;
-            if (ball.x > 0)
-            {
-                if (ball.y < 0)
-                    right.y = ball.y + 20;
-                else if (ball.y > 0)
-                    right.y = ball.y - 20;
-                else if (ball.y == 0)
-                    right.y = ball.y;
 
-                /*right.y = ball.y;
-            left.y = -ball.y;*/
-             if (ball.y > 125)
-            {
-                left.y = 125;
-                right.y = 125;
-            }
-
-            else if (ball.y < -125)
-            {
-                left.y = -125;
-                right.y = -125;
-            }
-
-            else
-            {
-                left.y = ball.y;
-                right.y = ball.y;
-            }
-            
+            ball.ai();
+            ball.adjust(1);
+            reflector.compensate();
         }
         else
         {
+            system("afplay beep-10.wav");
             settings.increase_score(1);
             settings.start_settings();
             value = 0;
         }
     }
+
     if (value == 0)
     {
         time1 = time(0);
@@ -364,25 +404,11 @@ void Timer(int value)
 
         else
         {
-            if (ball.y > 125)
-            {
-                left.y = 125;
-                right.y = 125;
-            }
-
-            else if (ball.y < -125)
-            {
-                left.y = -125;
-                right.y = -125;
-            }
-
-            else
-            {
-                left.y = ball.y;
-                right.y = ball.y;
-            }
+            ball.ai();
+            reflector.compensate();
         }
     }
+
     ball.move();
     ball.reflection();
     glutPostRedisplay();
@@ -404,6 +430,7 @@ void draw()
 
 int main(int argc, char **argv)
 {
+    system("afplay timer.wav");
     srand(time(NULL));
     settings.start_settings();
     glutInit(&argc, argv);
@@ -415,7 +442,7 @@ int main(int argc, char **argv)
     glutTimerFunc(settings.delay, Timer, 0);
     //glutKeyboardFunc(keyboard);
     //glutKeyboardUpFunc(keyboardUp);
-    glClearColor(0, 0, 0, 1.0);
+    glClearColor(1, 0.75, 1, 1.0);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluOrtho2D(-settings.OrthoWid, settings.OrthoWid, -settings.OrthoHei, settings.OrthoHei);
