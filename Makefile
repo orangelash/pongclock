@@ -1,9 +1,8 @@
 #All purpose makefile
-#replace the file name
 
 # Linux (default)
 EXE = main
-LDFLAGS = -lGL -lGLU -lglut #-lm math
+LDFLAGS = -lGL -lGLU -lglut -I"./audio/include/" ./audio/bin/linux-gcc-64/libIrrKlang.so -pthread#-lm math
 
 # Windows (cygwin)
 ifeq "$(OS)" "Windows_NT"
