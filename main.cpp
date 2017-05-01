@@ -1,6 +1,11 @@
+// Author: João Alexandre Aguiar Amaral Santos
+//Git: github/orangelash/pongclock
+
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
+#include <GL/freeglut.h>
+#include "irrKlang.h"
 
 #include <time.h>
 #include <math.h>
@@ -8,47 +13,62 @@
 #include <cstdlib>
 #include <ctime>
 #include <stdio.h>
+#include <string.h>
+using namespace irrklang;
 
-int aux_counter;
-int hour_counter = 0;
+#pragma comment(lib, "irrKlang.lib") // link with irrKlang.dll
 
+ISoundEngine *SoundEngine = createIrrKlangDevice();
 time_t now = time(0);
 time_t hour = time(0);
 time_t time1;
-tm *ltm2;
 tm *ltm = localtime(&now);
 
 class game
 {
   public:
-    int OrthoWid;
-    int OrthoHei;
-    int WinWid;
-    int WinHei;
-    int winXPos;
-    int winYPos;
-    float FieldSizeX;
-    float FieldSizeY;
-    int delay;
+    float score1, score2, score3,
+        ref1, ref2, ref3,
+        field1, field2, field3,
+        ball1, ball2, ball3,
+        back1, back2, back3, back4;
+
+    int OrthoWid,
+        OrthoHei;
+
+    int WinWid,
+        WinHei;
+
+    int winXPos,
+        winYPos;
+
+    float FieldSizeX,
+        FieldSizeY;
+
     float PThickness;
     float BallSize;
     float BorderT;
     float MLineT;
-    int ScoreL;
-    int ScoreR;
-    float TextPosX;
-    float TextPosY;
-    float BallSpeedX;
-    float PSpeedY;
+
+    int ScoreL,
+        ScoreR;
+
+    float TextPosX,
+        TextPosY;
+    void changeColor(int i);
     game()
     {
+        score1 = 1, score2 = 1, score3 = 1;
+        ref1 = 1, ref2 = 1, ref3 = 1;
+        field1 = 1, field2 = 1, field3 = 1;
+        ball1 = 1, ball2 = 1, ball3 = 1;
+        back1 = 0, back2 = 0, back3 = 0, back4 = 0;
         WinWid = 300;
         WinHei = 300;
         OrthoWid = 300;
         OrthoHei = 300;
         winXPos = 100;
         winYPos = 100;
-        delay = 1;
         PThickness = 10;
         BallSize = 10;
         FieldSizeX = 200;
@@ -59,8 +79,6 @@ class game
         ScoreR = (ltm->tm_min);
         TextPosX = 0;
         TextPosY = FieldSizeY + 10;
-        BallSpeedX = 2;
-        PSpeedY = 5;
     }
     void start_settings();
     void increase_score(int score);
@@ -80,6 +98,7 @@ class ball
     void draw();
     void ai();
     void adjust(int flag);
+
 } ball;
 
 class reflector
@@ -88,43 +107,56 @@ class reflector
     float x, y;
     float vy;
     float size;
-    bool Up, Down;
     reflector()
     {
         vy = 0;
         y = 0;
-        Up = false;
-        Down = false;
     }
     void draw();
     void compensate();
 } left, right, reflector;
 
-/*
- void game::KeyControl()
- {
- if ((left.Up) && (!left.Down))
- left.vy = PSpeedY;
- if ((!left.Up) && (left.Down))
- left.vy = -PSpeedY;
- if ((right.Up) && (!right.Down))
- right.vy = PSpeedY;
- if ((!right.Up) && (right.Down))
- right.vy = -PSpeedY;
- }
- */
+<<<<<<< HEAD
+
+=======
+void game::changeColor(int i)
+{
+    if (i == 1)
+    {
+        score1 = 1, score2 = 1, score3 = 1;
+        ref1 = 1, ref2 = 1, ref3 = 1;
+        field1 = 1, field2 = 1, field3 = 1;
+        ball1 = 1, ball2 = 1, ball3 = 1;
+        glClearColor(0, 0, 0, 1);
+    }
+    if (i == 2)
+    {
+        score1 = 1, score2 = 1, score3 = 0.6;
+        ref1 = 0.5, ref2 = 0.5, ref3 = 1;
+        field1 = 0, field2 = 1, field3 = 1;
+        ball1 = 0.5, ball2 = 0.5, ball3 = 1;
+        glClearColor(0.1, 0.1, 0.3, 1);
+    }
+    if (i == 3)
+    {
+        score1 = 0.3, score2 = 0.6, score3 = 0.6;
+        ref1 = 0.2, ref2 = 0.5, ref3 = 0.8;
+        field1 = 0.5, field2 = 1, field3 = 0.3;
+        ball1 = 0.2, ball2 = 0.5, ball3 = 0.8;
+        glClearColor(0.2, 0.3, 0.3, 1);
+    }
+}
+>>>>>>> marco
 
 void game::start_settings()
 {
-    aux_counter = 2;
     now = time(0);
-
     left.size = 60;
     right.size = 60;
     left.x = -185;
     right.x = 185;
-    ball.vx = 2.3;
-    ball.vy = 2.3;
+    ball.vx =5;
+    ball.vy = 5;
     ball.x = 0;
     ball.y = 0;
 }
@@ -147,7 +179,7 @@ void game::increase_score(int score)
 
 void game::DrawField()
 {
-    glColor3f(1, 1, 0);
+    glColor3f(field1, field2, field3);
     glVertex2f(-FieldSizeX - BorderT, -FieldSizeY - BorderT);
     glVertex2f(FieldSizeX + BorderT, -FieldSizeY - BorderT);
     glVertex2f(FieldSizeX + BorderT, -FieldSizeY);
@@ -186,24 +218,24 @@ void game::DrawScore()
     ScoreL = ltm3->tm_hour;
     ScoreR = ltm3->tm_min;
 
-    glColor3f(1, 1, 1);
-    glRasterPos2f(TextPosX - 50, TextPosY + 20);
-    glutBitmapCharacter(GLUT_BITMAP_9_BY_15, '0' + ScoreL / 10);
+    glColor3f(score1, score2, score3);
+    glRasterPos2f(TextPosX - 60, TextPosY + 20);
+    glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '0' + ScoreL / 10);
     glRasterPos2f(TextPosX - 40, TextPosY + 20);
-    glutBitmapCharacter(GLUT_BITMAP_9_BY_15, '0' + ScoreL % 10);
+    glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '0' + ScoreL % 10);
 
     glRasterPos2f(TextPosX, TextPosY + 20);
-    glutBitmapCharacter(GLUT_BITMAP_9_BY_15, ':');
+    glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, ':');
 
     glRasterPos2f(TextPosX + 30, TextPosY + 20);
-    glutBitmapCharacter(GLUT_BITMAP_9_BY_15, '0' + ScoreR / 10);
-    glRasterPos2f(TextPosX + 45, TextPosY + 20);
-    glutBitmapCharacter(GLUT_BITMAP_9_BY_15, '0' + ScoreR % 10);
+    glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '0' + ScoreR / 10);
+    glRasterPos2f(TextPosX + 50, TextPosY + 20);
+    glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '0' + ScoreR % 10);
 }
 
 void reflector::draw()
 {
-    glColor3f(1, 0, 1);
+    glColor3f(settings.ref1, settings.ref2, settings.ref3);
     glVertex2f(x + settings.PThickness, y + size / 2);
     glVertex2f(x + settings.PThickness, y - size / 2);
     glVertex2f(x - settings.PThickness, y - size / 2);
@@ -226,18 +258,22 @@ void reflector::compensate()
 void ball::reflection()
 {
     if ((y <= -settings.FieldSizeY + 5) || (y >= settings.FieldSizeY - 5))
+    {
         vy = -vy;
+        SoundEngine->play2D("./audio/bleep.wav", GL_FALSE);
+    }
+
     if ((x <= left.x + settings.PThickness) && (fabs(double(y - left.y)) <= left.size / 2 + fabs(vy)))
     {
         vx = -vx;
         vy += left.vy;
-        system("afplay pipe.wav");
+        SoundEngine->play2D("./audio/pipe.wav", GL_FALSE);
     }
     if ((x >= right.x - settings.PThickness) && (fabs(double(y - right.y)) <= right.size / 2 + fabs(vy)))
     {
         vx = -vx;
         vy += right.vy;
-        system("afplay pipe.wav");
+        SoundEngine->play2D("./audio/pipe.wav", GL_FALSE);
     }
 }
 
@@ -248,10 +284,10 @@ void ball::ai()
         if (vx < 0)
         {
             if (y > left.y)
-                left.y = left.y + 3;
+                left.y = left.y + 6;
 
             if (y < left.y)
-                left.y = left.y - 3;
+                left.y = left.y - 6;
         }
     }
 
@@ -260,10 +296,10 @@ void ball::ai()
         if (vx >= 0)
         {
             if (y > right.y)
-                right.y = right.y + 3;
+                right.y = right.y + 6;
 
             if (y < right.y)
-                right.y = right.y - 3;
+                right.y = right.y - 6;
         }
     }
 }
@@ -273,21 +309,21 @@ void ball::adjust(int flag)
 
     if (flag == 1)
     {
-        if (left.y - y < 1 || left.y + y > 1)
+        if (vx < 0 && x < -50)
         {
-            if (left.y < y)
-                left.y = left.y - 3;
-            if (left.y >= y)
+            if (y < 0)
                 left.y = left.y + 3;
+            if (y >= 0)
+                left.y = left.y - 3;
         }
     }
     else
     {
-        if (right.y - y < 1 || right.y + y > 1)
+        if (vx > 0 && x > 50)
         {
-            if (right.y < y)
-                right.y = right.y - 3;
-            if (right.y >= y)
+            if (y < 0)
+                right.y = right.y + 3;
+            if (y >= 0)
                 right.y = right.y - 3;
         }
     }
@@ -295,6 +331,7 @@ void ball::adjust(int flag)
 
 void ball::draw()
 {
+    glColor3f(settings.ball1, settings.ball2, settings.ball3);
     glVertex2f(x + settings.BallSize, y + settings.BallSize);
     glVertex2f(x + settings.BallSize, y - settings.BallSize);
     glVertex2f(x - settings.BallSize, y - settings.BallSize);
@@ -307,63 +344,47 @@ void ball::move()
     y += vy;
 }
 
-/*
- void keyboard(unsigned char key, int x, int y)
- {
- switch (key)
- {
- case 'q':
- left.Up = true;
-break;
-case 'a':
-left.Down = true;
-break;
-case 'z':
-if (left.hold)
-{
-    left.hold = false;
-    ball.vx = settings.BallSpeedX;
-}
-break;
-case 'p':
-right.Up = true;
-break;
-case 'l':
-right.Down = true;
-break;
-case 'm':
-if (right.hold)
-{
-    right.hold = false;
-    ball.vx = -settings.BallSpeedX;
-    break;
-}
-}
-}
-void keyboardUp(unsigned char key, int x, int y)
+<<<<<<< HEAD
+=======
+void keyboard(unsigned char key, int x, int y)
 {
     switch (key)
     {
-    case 'esc':
-        return 0;
+
+    case 'f':
+        glutFullScreenToggle();
         break;
-    case 'a':
-        left.Down = false;
+    case 27:
+        exit(0);
         break;
-    case 'p':
-        right.Up = false;
+
+    case '1':
+        SoundEngine->stopAllSounds();
+        SoundEngine->play2D("./audio/breakout.mp3", GL_TRUE);
+        settings.changeColor(1);
         break;
-    case 'l':
-        right.Down = false;
+    case '2':
+        SoundEngine->stopAllSounds();
+        SoundEngine->play2D("./audio/MF-W-90.XM", GL_TRUE);
+        settings.changeColor(2);
+        break;
+    case '3':
+        SoundEngine->stopAllSounds();
+        SoundEngine->play2D("./audio/MF-3DAYS.S3M", GL_TRUE);
+        settings.changeColor(3);
         break;
     }
 }
-*/
+>>>>>>> marco
 void Timer(int value)
 {
     if (value == 1)
     {
-        if (time1 - hour >= 20)
+<<<<<<< HEAD
+        if (time1 - hour >= 3597)
+=======
+        if (time1 - hour >=20)
+>>>>>>> marco
         {
             if (ball.x < right.x)
             {
@@ -373,7 +394,7 @@ void Timer(int value)
             }
             else
             {
-                system("afplay beep-10.wav");
+                SoundEngine->play2D("./audio/beep-10.wav", GL_FALSE);
                 settings.increase_score(2);
                 settings.start_settings();
                 hour = time(0);
@@ -382,6 +403,12 @@ void Timer(int value)
         }
         else if (ball.x > left.x)
         {
+<<<<<<< HEAD
+           
+            left.y = -ball.y;
+            right.y = ball.y;
+=======
+>>>>>>> marco
 
             ball.ai();
             ball.adjust(1);
@@ -389,7 +416,7 @@ void Timer(int value)
         }
         else
         {
-            system("afplay beep-10.wav");
+            SoundEngine->play2D("./audio/bleep.mp3", GL_FALSE);
             settings.increase_score(1);
             settings.start_settings();
             value = 0;
@@ -399,7 +426,7 @@ void Timer(int value)
     if (value == 0)
     {
         time1 = time(0);
-        if (time1 - (now) >= 10)
+        if (time1 - (now) >= 57)
             value = 1;
 
         else
@@ -414,7 +441,6 @@ void Timer(int value)
     glutPostRedisplay();
     glutTimerFunc(1, Timer, value);
 }
-
 void draw()
 {
     glClear(GL_COLOR_BUFFER_BIT);
@@ -430,22 +456,27 @@ void draw()
 
 int main(int argc, char **argv)
 {
-    system("afplay timer.wav");
+    puts("\t\nPongclock\n\nAuthor: João Alexandre Aguiar Amaral Santos\nGithub: www.github.com/orangelash/\nEmail: joaoaaasantos [at] gmail.com");
+    SoundEngine->play2D("./audio/breakout.mp3", GL_TRUE);
     srand(time(NULL));
+    puts("Configuring stats...");
     settings.start_settings();
+    puts("Initializing glut...");
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
+    puts("Creating window...");
     glutInitWindowSize(settings.WinWid, settings.WinHei);
     glutInitWindowPosition(settings.winXPos, settings.winYPos);
     glutCreateWindow("***PongClock***");
     glutDisplayFunc(draw);
-    glutTimerFunc(settings.delay, Timer, 0);
-    //glutKeyboardFunc(keyboard);
-    //glutKeyboardUpFunc(keyboardUp);
-    glClearColor(1, 0.75, 1, 1.0);
+    glutTimerFunc(1, Timer, 0);
+    glutKeyboardFunc(keyboard);
+    glClearColor(settings.back1, settings.back2, settings.back3, settings.back4);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluOrtho2D(-settings.OrthoWid, settings.OrthoWid, -settings.OrthoHei, settings.OrthoHei);
+    puts("\n  > Setup Complete <");
+    puts("\nInstructions:\n1- Classic Theme\n2- Midnight Theme\n3- Jungle Theme\nf- Toggle Fullscreen\nESC- Exit\n");
     glutMainLoop();
     return (0);
 }
